@@ -1,22 +1,54 @@
-import { getSpreadsheetData } from '../../utils/spreadsheet';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import FlashCardComponent from '../../components/FlashCard';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-export default async function FlashCardPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined }
-}) {
-  const cardSets = await getSpreadsheetData();
-  const setParam = (await searchParams).set;
+interface FlashCardSet {
+  title: string;
+  cards: { question: string; answer: string }[];
+}
+
+export default function FlashCardPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [cardSets, setCardSets] = useState<FlashCardSet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('/api/spreadsheet');
+      const data = await response.json();
+      setCardSets(data);
+      setIsLoading(false);
+      
+      const setParam = searchParams.get('set');
+      const setIndex = parseInt(
+        Array.isArray(setParam) ? setParam[0] : setParam ?? ''
+      );
+      
+      if (isNaN(setIndex) || setIndex < 0 || setIndex >= data.length) {
+        router.push('/');
+      }
+    };
+
+    fetchData();
+  }, [searchParams, router]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const setParam = searchParams.get('set');
   const setIndex = parseInt(
     Array.isArray(setParam) ? setParam[0] : setParam ?? ''
   );
   
   // セットが指定されていないか、無効な場合はトップページにリダイレクト
   if (isNaN(setIndex) || setIndex < 0 || setIndex >= cardSets.length) {
-    redirect('/');
+    router.push('/');
   }
 
   const selectedSet = cardSets[setIndex];
