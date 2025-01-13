@@ -1,12 +1,13 @@
 // src/app/page.tsx
 import { getSpreadsheetData } from '../utils/spreadsheet';
 import FlashCardComponent from '../components/FlashCard';
- 
+import styles from './page.module.css'; // CSSモジュールをインポート
+
 export default async function Page() {
   const cards = await getSpreadsheetData();
   
   return (
-    <>
+    <div className={styles.container}> {/* コンテナクラスを適用 */}
       {cards.length > 0 ? (
         <FlashCardComponent initialCards={cards} />
       ) : (
@@ -21,6 +22,6 @@ export default async function Page() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }
