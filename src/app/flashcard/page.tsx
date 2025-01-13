@@ -14,23 +14,37 @@ interface FlashCardSet {
 function FlashCardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [cardSets, setCardSets] = useState<FlashCardSet[]>([]);
+  const [selectedSet, setSelectedSet] = useState<FlashCardSet | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch('/api/spreadsheet');
-      const data = await response.json();
-      setCardSets(data);
-      setIsLoading(false);
-      
       const setParam = searchParams.get('set');
       const setIndex = parseInt(
         Array.isArray(setParam) ? setParam[0] : setParam ?? ''
       );
-      
-      if (isNaN(setIndex) || setIndex < 0 || setIndex >= data.length) {
+
+      if (isNaN(setIndex)) {
         router.push('/');
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/spreadsheet?set=${setIndex}`, {
+          cache: 'no-store'
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const data = await response.json();
+        setSelectedSet(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        router.push('/');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -41,17 +55,10 @@ function FlashCardContent() {
     return <div>Loading...</div>;
   }
 
-  const setParam = searchParams.get('set');
-  const setIndex = parseInt(
-    Array.isArray(setParam) ? setParam[0] : setParam ?? ''
-  );
-  
-  // セットが指定されていないか、無効な場合はトップページにリダイレクト
-  if (isNaN(setIndex) || setIndex < 0 || setIndex >= cardSets.length) {
+  if (!selectedSet) {
     router.push('/');
+    return null;
   }
-
-  const selectedSet = cardSets[setIndex];
   
   return (
     <Suspense fallback={<div>Loading...</div>}>
