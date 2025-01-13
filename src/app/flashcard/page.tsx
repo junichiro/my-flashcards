@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import FlashCardComponent from '../../components/FlashCard';
 import Link from 'next/link';
@@ -11,7 +11,7 @@ interface FlashCardSet {
   cards: { question: string; answer: string }[];
 }
 
-export default function FlashCardPage() {
+function FlashCardContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [cardSets, setCardSets] = useState<FlashCardSet[]>([]);
@@ -54,17 +54,27 @@ export default function FlashCardPage() {
   const selectedSet = cardSets[setIndex];
   
   return (
-    <div className="container mx-auto p-4">
-      <div className="mb-4">
-        <Link
-          href="/"
-          className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded inline-flex items-center"
-        >
-          ← 戻る
-        </Link>
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="container mx-auto p-4">
+        <div className="mb-4">
+          <Link
+            href="/"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded inline-flex items-center"
+          >
+            ← 戻る
+          </Link>
+        </div>
+        <h1 className="text-2xl font-bold mb-4">{selectedSet.title}</h1>
+        <FlashCardComponent initialCards={selectedSet.cards} />
       </div>
-      <h1 className="text-2xl font-bold mb-4">{selectedSet.title}</h1>
-      <FlashCardComponent initialCards={selectedSet.cards} />
-    </div>
+    </Suspense>
+  );
+}
+
+export default function FlashCardPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <FlashCardContent />
+    </Suspense>
   );
 }
