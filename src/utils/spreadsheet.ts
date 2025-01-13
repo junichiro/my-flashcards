@@ -7,7 +7,12 @@ export type FlashCard = {
   answer: string;
 };
 
-export async function getSpreadsheetData(): Promise<FlashCard[]> {
+export type FlashCardSet = {
+  title: string;
+  cards: FlashCard[];
+};
+
+export async function getSpreadsheetData(): Promise<FlashCardSet[]> {
   try {
     const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS || '');
     const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
@@ -26,19 +31,29 @@ export async function getSpreadsheetData(): Promise<FlashCard[]> {
     await doc.loadInfo();
     console.log('Spreadsheet title:', doc.title); // スプレッドシートの読み込み確認
     
-    const sheet = doc.sheetsByIndex[0];
-    console.log('Sheet title:', sheet.title); // シート名確認
+    // 全シートのデータを取得
+    const cardSets: FlashCardSet[] = [];
     
-    const rows = await sheet.getRows();
-    console.log('Rows loaded:', rows.length); // 行数確認
+    for (const sheet of doc.sheetsByIndex) {
+      console.log('Processing sheet:', sheet.title); // シート名確認
+      
+      const rows = await sheet.getRows();
+      console.log('Rows loaded:', rows.length); // 行数確認
 
-    const cards = rows.map(row => ({
-      question: row.get('question'),
-      answer: row.get('answer'),
-    }));
+      const cards = rows.map(row => ({
+        question: row.get('question'),
+        answer: row.get('answer'),
+      }));
 
-    console.log('Processed cards:', cards); // 処理後のデータ確認
-    return cards;
+      cardSets.push({
+        title: sheet.title,
+        cards: cards,
+      });
+      
+      console.log('Processed cards for sheet:', sheet.title, cards); // 処理後のデータ確認
+    }
+
+    return cardSets;
 
   } catch (error) {
     console.error('スプレッドシートの読み込みエラーの詳細:', error);

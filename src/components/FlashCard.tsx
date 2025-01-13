@@ -1,7 +1,7 @@
 // src/components/FlashCard.tsx
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 type FlashCard = {
   question: string;
@@ -12,14 +12,26 @@ type Props = {
   initialCards: FlashCard[];
 };
 
+// Fisher-Yatesアルゴリズムによる配列のシャッフル
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export default function FlashCardComponent({ initialCards }: Props) {
-  const [cards] = useState(initialCards);
+  const shuffleCards = useCallback(() => shuffleArray(initialCards), [initialCards]);
+  const [cards, setCards] = useState(() => shuffleCards());
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [completed, setCompleted] = useState(false);
 
   const handleClick = () => {
     if (completed) {
+      setCards(shuffleCards()); // 最初からやり直す時に再シャッフル
       setCurrentIndex(0);
       setShowAnswer(false);
       setCompleted(false);
