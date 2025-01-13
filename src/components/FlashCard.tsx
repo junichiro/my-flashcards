@@ -114,7 +114,7 @@ export default function FlashCardComponent({ initialCards }: Props) {
               {currentIndex + 1} / {cards.length}
             </p>
             <div className="min-h-[200px] flex items-center justify-center">
-              <p className="text-xl">
+              <p className={`text-xl ${showAnswer ? 'text-blue-600' : 'text-black'}`}>
                 {displayedText}
               </p>
             </div>
