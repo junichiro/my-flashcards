@@ -94,10 +94,10 @@ export default function FlashCardComponent({ initialCards }: Props) {
 
   return (
     <div 
-      className="min-h-screen flex items-center justify-center bg-gray-100 p-4"
+      className="h-full flex items-center justify-center bg-gray-100 p-2 sm:p-4"
       onClick={handleClick}
     >
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full cursor-pointer">
+      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-md w-full cursor-pointer">
         {completed ? (
           <div className="text-center">
             <h2 className="text-2xl font-bold text-green-600">
@@ -113,8 +113,12 @@ export default function FlashCardComponent({ initialCards }: Props) {
             <p className="text-sm text-gray-500 mb-4">
               {currentIndex + 1} / {cards.length}
             </p>
-            <div className="min-h-[200px] flex items-center justify-center">
-              <p className={`text-xl ${showAnswer ? 'text-blue-600' : 'text-black'}`}>
+            <div className="min-h-[180px] sm:min-h-[240px] flex">
+              <p className={`text-xl w-full ${
+                showAnswer 
+                  ? 'text-blue-600 text-center flex items-center justify-center' 
+                  : 'text-black pt-4'
+              }`}>
                 {displayedText}
               </p>
             </div>
