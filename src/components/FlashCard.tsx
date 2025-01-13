@@ -28,30 +28,32 @@ export default function FlashCardComponent({ initialCards }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
   const [completed, setCompleted] = useState(false);
-  const [displayedText, setDisplayedText] = useState('');
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [charIndex, setCharIndex] = useState(-1);
   const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  // 現在表示すべきテキストを計算
+  const displayedText = showAnswer 
+    ? cards[currentIndex].answer
+    : cards[currentIndex].question.slice(0, charIndex + 1);
 
   // 問題文を1文字ずつ表示する
   useEffect(() => {
     if (showAnswer || completed) {
-      setDisplayedText(showAnswer ? cards[currentIndex].answer : '');
+      setCharIndex(-1);
       return;
     }
 
-    const question = cards[currentIndex].question;
-    setIsAnimating(true);
-    setDisplayedText('');
+    const questionLength = cards[currentIndex].question.length;
+    setCharIndex(-1); // リセット
 
-    let currentChar = 0;
     intervalRef.current = setInterval(() => {
-      if (currentChar < question.length) {
-        setDisplayedText(prev => prev + question[currentChar]);
-        currentChar++;
-      } else {
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        setIsAnimating(false);
-      }
+      setCharIndex(prev => {
+        if (prev + 1 >= questionLength) {
+          if (intervalRef.current) clearInterval(intervalRef.current);
+          return prev;
+        }
+        return prev + 1;
+      });
     }, 150); // 早押しクイズに適した間隔
 
     return () => {
@@ -61,11 +63,11 @@ export default function FlashCardComponent({ initialCards }: Props) {
 
   const handleClick = () => {
     // アニメーション中のクリックで答えを表示
+    const isAnimating = charIndex >= 0 && charIndex < cards[currentIndex].question.length - 1;
     if (isAnimating) {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      setIsAnimating(false);
+      setCharIndex(-1);
       setShowAnswer(true);
-      setDisplayedText(cards[currentIndex].answer);
       return;
     }
 
@@ -117,7 +119,7 @@ export default function FlashCardComponent({ initialCards }: Props) {
               </p>
             </div>
             <p className="text-sm text-gray-500 mt-4">
-              {isAnimating 
+              {(charIndex >= 0 && charIndex < cards[currentIndex].question.length - 1)
                 ? 'タップして答えを表示'
                 : `タップして${showAnswer ? '次の問題' : '答え'}を表示`}
             </p>
