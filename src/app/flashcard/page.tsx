@@ -3,11 +3,16 @@ import FlashCardComponent from '../../components/FlashCard';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
+type PageProps = {
+    params: {}
+    searchParams: {
+        set?: string
+    }
+}
+
 export default async function FlashCardPage({
   searchParams,
-}: {
-  searchParams: { set?: string };
-}) {
+}: PageProps) {
   const cardSets = await getSpreadsheetData();
   const setIndex = parseInt(searchParams.set ?? '');
   
