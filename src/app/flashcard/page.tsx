@@ -3,18 +3,16 @@ import FlashCardComponent from '../../components/FlashCard';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-type PageProps = {
-    params: {}
-    searchParams: {
-        set?: string
-    }
-}
-
 export default async function FlashCardPage({
   searchParams,
-}: PageProps) {
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
   const cardSets = await getSpreadsheetData();
-  const setIndex = parseInt(searchParams.set ?? '');
+  const setParam = (await searchParams).set;
+  const setIndex = parseInt(
+    Array.isArray(setParam) ? setParam[0] : setParam ?? ''
+  );
   
   // セットが指定されていないか、無効な場合はトップページにリダイレクト
   if (isNaN(setIndex) || setIndex < 0 || setIndex >= cardSets.length) {
